@@ -4,6 +4,11 @@
 #include<stdlib.h>
 #include<string.h>
 
+/**
+ * Author: Benjamin Creem
+ * This program sorts a file using merge sort and threads
+ */
+
 #define KEYSIZE 8
 #define DATASIZE 56
 
@@ -23,6 +28,7 @@ struct ThdArg
 #define RECSIZE sizeof(Record)
 
 void *runner(void *param);
+int compare(const void *a, const void *b);
 
 int main(int argc, char *argv[])
 {
@@ -53,17 +59,63 @@ int main(int argc, char *argv[])
 	printf("The number of cores is: %d\n", n);
 
 
+	Record recs[nRecs];
+	Record newRec;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	int recNum = 0;
+	for(int i = 0; i < nRecs; i++)
+	{
+		read = getline(&line, &len, file);
+		strncpy(newRec.key, line, KEYSIZE);
+		strncpy(newRec.data, line+KEYSIZE, KEYSIZE+DATASIZE);
+		//printf("%.*s\n", KEYSIZE, newRec.key);
+		recs[recNum] = newRec;
+		recNum++;
+	}
 
-	//Pointer to Array of Thread IDs
-	static pthread_t *tids;
+	printf("Before Sorting\n");
+	for(int i = 0; i < nRecs; i++)
+	{
+		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
+	}
+
+	//Pointer to tid
+	//pthread_t *tid;
+	//set of thread attributes
+	//pthread_attr_t attr; 
+
+	//We are now ready to divide the problem into multiple threads. 
+	//The first step is to copy the file's entries into Records, and then
+	//put those records into nThreads arrays. These arrays are then
+	//sorted in threads using qsort, before they are joined up with other
+	//threads and arrays and merged back together. This process repeats
+	//until the final sorted array is stored in the 0th array. 
 	
-
-
+	//pthread_attr_init(&attr);
+	//pthread_create(&tid, &attr, runner, (void *) recs);
+	//pthread_join(tid, NULL);
+	
+	
 
 	fclose(file);
 }
 
 void *runner(void *param)
 {
-
+	qsort(param, sizeof(param), sizeof(Record), compare);
 }
+
+int compare(const void *a, const void *b)
+{
+	Record *recA = (Record *)a;
+	Record *recB = (Record *)b;
+	return (recB->key - recA->key);
+}
+
+
+
+
+
+
