@@ -33,6 +33,7 @@ int compare(const void *a, const void *b);
 void mergesort(Record *array, int arrayLength);
 
 int curNumThreads;
+int minThreadSize;
 pthread_mutex_t threadLock;
 
 int main(int argc, char *argv[])
@@ -85,6 +86,8 @@ int main(int argc, char *argv[])
 	{
 		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
 	}
+	
+	minThreadSize = nRecsPerThd;
 
 	//Pointer to tid
 	pthread_t tid;
@@ -109,8 +112,60 @@ int main(int argc, char *argv[])
 	fclose(file);
 }
 
-void merge(Record *data, int low, int hi, int tid)
+Record* merge(Record *array, int low, int hi, int tid)
 {
+	printf("Merging\n");
+	int center = 0;
+	int i = low;
+	int mid = low + ((hi - low)/2);
+	int j = mid + 1;
+	Record *c = (Record *) malloc((hi-low+1) * sizeof(Record));
+	while(i <= mid && j <= hi)
+	{
+		if(array[i].key <= array[j].key)
+		{
+			j++;
+			c[center] = array[j];
+		}
+		else
+		{
+			center++;
+			j++;
+			c[center] = array[j];
+		}
+	}
+	
+
+	if(i == mid + 1)
+	{
+		while(j <= hi)
+		{
+			center++;
+			j++;
+			c[center] = array[j];
+		}
+	}
+	else
+	{
+		while(i <= mid)
+		{
+			center++;
+			j++;
+			c[center] = array[i];
+		}
+	}
+
+	//Copy back
+	i = low;
+	center = 0;
+	while(i <= hi)
+	{
+		i++;
+		center++;
+		array[i] = c[center];
+	}
+
+	free(c);
 	
 }
 
@@ -127,15 +182,70 @@ void mergesort(Record *array, int arrayLength)
 
 	//Starting threads
 	pthread_t thread;
+	printf("Initial Thread Created\n");
 	pthread_create(&thread, NULL, runner, &threadArgument);
 	pthread_join(thread, NULL);
 }
 
 void *runner(void *param)
 {
+	ThdArg *thdArg = (ThdArg *) param;
+	int l = thdArg->lowRec;
+	int h = thdArg->hiRec;
+	int t = thdArg->tid;
 	
-	qsort(param, sizeof(param), sizeof(Record), compare);
+	//If we can't create anymore threads to do work, qsort
+	if(h - 1 + 1 <= minThreadSize)
+	{
+		qsort(thdArg->array+1, h-l+1, sizeof(ThdArg), compare);
+	}
+	//If the array is big enough, we can split it into smaller arrays
+	//And qsort those in separate threads before returning here
+	else
+	{
+		//First Thread Info
+		int m = l + ((h-1)/2);
+		ThdArg firstArg;
+		firstArg.lowRec = l;
+		firstArg.hiRec = h;
+		firstArg.array = thdArg->array;
+		pthread_mutex_lock(&threadLock);
+		firstArg.tid = curNumThreads++;
+		pthread_mutex_unlock(&threadLock);
+		
+		//First thread
+		pthread_t firstThread;
+		pthread_create(&firstThread, NULL, runner, &firstArg);
+		//int firstThreadDone = 1;
+		
+		//Second Thread Info
+		ThdArg secArg;
+		secArg.lowRec = m + 1;
+		secArg.hiRec = h;
+		secArg.array = thdArg->array;
+		pthread_mutex_lock(&threadLock);
+		secArg.tid = curNumThreads++;
+		pthread_mutex_unlock(&threadLock);
+
+		//Second thread
+		pthread_t secondThread;
+		pthread_create(&secondThread, NULL, runner, &secArg);
+		//int secondThreadDone = 1;
+
+		pthread_join(firstThread, NULL);
+		pthread_join(secondThread, NULL);
+
+		merge(thdArg->array, l, h, t);	
+	}
+
+	pthread_exit(NULL);
 }
+
+
+
+
+
+
 
 int compare(const void *a, const void *b)
 {
