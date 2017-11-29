@@ -18,17 +18,22 @@ typedef struct Record
 	char data[DATASIZE];
 } Record;
 
-struct ThdArg
+typedef struct ThdArg
 {
-	int thdNum; //Thread number 0, 1, 2, 3...
-	Record *lowRec; //First record of group or first index of record
-	Record *hiRec; //Last record of group or last index of record
-};
+	Record *array;
+	int tid; //Thread number 0, 1, 2, 3...
+	int lowRec; //First record of group or first index of record
+	int hiRec; //Last record of group or last index of record
+} ThdArg;
 
 #define RECSIZE sizeof(Record)
 
 void *runner(void *param);
 int compare(const void *a, const void *b);
+void mergesort(Record *array, int arrayLength);
+
+int curNumThreads;
+pthread_mutex_t threadLock;
 
 int main(int argc, char *argv[])
 {
@@ -82,9 +87,9 @@ int main(int argc, char *argv[])
 	}
 
 	//Pointer to tid
-	//pthread_t *tid;
+	pthread_t tid;
 	//set of thread attributes
-	//pthread_attr_t attr; 
+	pthread_attr_t attr; 
 
 	//We are now ready to divide the problem into multiple threads. 
 	//The first step is to copy the file's entries into Records, and then
@@ -93,17 +98,42 @@ int main(int argc, char *argv[])
 	//threads and arrays and merged back together. This process repeats
 	//until the final sorted array is stored in the 0th array. 
 	
-	//pthread_attr_init(&attr);
-	//pthread_create(&tid, &attr, runner, (void *) recs);
-	//pthread_join(tid, NULL);
+	mergesort(recs, nRecs);
 	
-	
+	printf("After Sorting\n");
+	for(int i = 0; i < nRecs; i++)
+	{
+		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
+	}
 
 	fclose(file);
 }
 
+void merge(Record *data, int low, int hi, int tid)
+{
+	
+}
+
+void mergesort(Record *array, int arrayLength)
+{
+	ThdArg threadArgument;
+	threadArgument.array = array;
+	threadArgument.lowRec = 0;
+	threadArgument.hiRec = arrayLength;
+	//Shared data
+	curNumThreads = 0;
+	pthread_mutex_init(&threadLock, NULL);
+	threadArgument.tid = 0;
+
+	//Starting threads
+	pthread_t thread;
+	pthread_create(&thread, NULL, runner, &threadArgument);
+	pthread_join(thread, NULL);
+}
+
 void *runner(void *param)
 {
+	
 	qsort(param, sizeof(param), sizeof(Record), compare);
 }
 
