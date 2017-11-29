@@ -122,7 +122,7 @@ Record* merge(Record *array, int low, int hi, int tid)
 	Record *c = (Record *) malloc((hi-low+1) * sizeof(Record));
 	while(i <= mid && j <= hi)
 	{
-		if(strcmp(array[i].key, array[j].key)>0)
+		if(array[i].key <= array[j].key)
 		{
 			j++;
 			c[center] = array[j];
