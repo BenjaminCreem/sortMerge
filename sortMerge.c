@@ -122,59 +122,59 @@ int main(int argc, char *argv[])
 
 
 
-void* merge(ThdArg thdArg, int l, int h, int tid)
+void* merge(ThdArg thdArg, int low, int hi, int tid)
 {
 	printf("Merging\n");
-	int ctr = 0;
-	int i = l;
-	int mid = l + ((h-l)/2);
+	int counter = 0;
+	int i = low;
+	int mid = low + ((hi-low)/2);
 	int j = mid + 1;
-	Record *c = (Record *)malloc((h-l+1) * sizeof(Record));
+	Record *c = (Record *)malloc((hi-low+1) * sizeof(Record));
 	
-	while(i <= mid && j <= h)
+	while(i <= mid && j <= hi)
 	{
 		if(strcmp(thdArg.array[i].key, thdArg.array[j].key))
 		{
-			ctr++;
+			counter++;
 			i++;
-			c[ctr] = thdArg.array[i];
+			c[counter] = thdArg.array[i];
 		}
 		else
 		{
-			ctr++;
+			counter++;
 			j++;
-			c[ctr] = thdArg.array[j];
+			c[counter] = thdArg.array[j];
 		}	
 	}
 
 
 	if(i == mid + 1)
 	{
-		while(j <= h)
+		while(j <= hi)
 		{
-			ctr++;
+			counter++;
 			j++;
-			c[ctr] = thdArg.array[j];
+			c[counter] = thdArg.array[j];
 		}
 	}
 	else
 	{
 		while(i <= mid)
 		{
-			ctr++;
+			counter++;
 			i++;
-			c[ctr] = thdArg.array[i];
+			c[counter] = thdArg.array[i];
 		}
 	}
 
 
-	i = l;
-	ctr = 0;
-	while(i <= h)
+	i = low;
+	counter = 0;
+	while(i <= hi)
 	{
 		i++;
-		ctr++;
-		thdArg.array[i] = c[ctr];
+		counter++;
+		thdArg.array[i] = c[counter];
  	}
 	free(c);
 }
