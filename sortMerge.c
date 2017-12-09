@@ -81,11 +81,11 @@ int main(int argc, char *argv[])
 		recNum++;
 	}
 
-	printf("Before Sorting\n");
-	for(int i = 0; i < nRecs; i++)
-	{
-		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
-	}
+	//printf("Before Sorting\n");
+	//for(int i = 0; i < nRecs; i++)
+	//{
+	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
+	//}
 	
 	minThreadSize = nRecsPerThd;
 
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 	
 	mergesort(recs, nRecs);
 	
-	printf("After Sorting\n");
+	//printf("After Sorting\n");
 	for(int i = 0; i < nRecs; i++)
 	{
 		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
@@ -133,7 +133,7 @@ void* merge(ThdArg thdArg, int l, int h, int tid)
 	
 	while(i <= mid && j <= h)
 	{
-		if(thdArg.array[i].key < thdArg.array[j].key)
+		if(strcmp(thdArg.array[i].key, thdArg.array[j].key))
 		{
 			ctr++;
 			i++;
@@ -241,7 +241,7 @@ void *runner(void *param)
 		if(thdErrChck) //Failed to create thread if this goes
 		{
 			thdErrChck = 0;
-			qsort(thdArg->array+1, mid - 1 + 1, sizeof(ThdArg), compare);
+			qsort(thdArg->array+1, mid - 1 + 1, sizeof(Record), compare);
 		}
 		//Stuff for second thread
 		ThdArg secThread;
@@ -258,7 +258,7 @@ void *runner(void *param)
 		if(thdErrChck)
 		{
 			thdErrChck = 0;
-			qsort(thdArg->array + mid + 1, thdArg->hiRec - mid, sizeof(ThdArg), compare);
+			qsort(thdArg->array + mid + 1, thdArg->hiRec - mid, sizeof(Record), compare);
 		}
 		//Wait for threads
 		if(thdOneSuccess)
