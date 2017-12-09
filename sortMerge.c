@@ -207,20 +207,20 @@ void *runner(void *param)
 	//I will change that later
 	if(thdArg->hiRec - thdArg->lowRec <= minThreadSize)
 	{
-		printf("%d   %d", minThreadSize ,thdArg->hiRec-thdArg->lowRec);
-		printf("\n\n\n\n\nBefore QSorting\n");
-		for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
-		{
-			printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		}
+		//printf("%d   %d", minThreadSize ,thdArg->hiRec-thdArg->lowRec);
+		//printf("\n\n\n\n\nBefore QSorting\n");
+		//for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
+		//{
+		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+		//}
 
-		qsort(thdArg->array, thdArg->hiRec - thdArg->lowRec+1, sizeof(ThdArg), compare);
+		qsort(thdArg->array, thdArg->hiRec - (thdArg->lowRec), sizeof(Record), compare);
 
-		printf("\n\n\n\n\nAfter QSorting\n");
-		for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
-		{
-			printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		}
+		//printf("\n\n\n\n\nAfter QSorting\n");
+		//for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
+		//{
+		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+		//}
 	}
 	else //Array needs to be split into two smaller arrays in two separate threads
 	{
