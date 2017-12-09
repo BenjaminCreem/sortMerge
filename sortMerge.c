@@ -236,13 +236,7 @@ void *runner(void *param)
 		pthread_mutex_unlock(&lockNumThreads);
 		//Make first Thread
 		pthread_t thread0;
-		int thdErrChck = pthread_create(&thread0, NULL, runner, &firstThread);
-		int thdOneSuccess = 1;
-		if(thdErrChck) //Failed to create thread if this goes
-		{
-			thdErrChck = 0;
-			qsort(thdArg->array+1, mid - 1 + 1, sizeof(Record), compare);
-		}
+		pthread_create(&thread0, NULL, runner, &firstThread);
 		//Stuff for second thread
 		ThdArg secThread;
 		secThread.lowRec = mid + 1;
@@ -253,22 +247,10 @@ void *runner(void *param)
 		pthread_mutex_unlock(&lockNumThreads);
 		//Making Second Thread
 		pthread_t thread1;
-		thdErrChck = pthread_create(&thread1, NULL, runner, &secThread);
-		int thdTwoSuccess = 1;
-		if(thdErrChck)
-		{
-			thdErrChck = 0;
-			qsort(thdArg->array + mid + 1, thdArg->hiRec - mid, sizeof(Record), compare);
-		}
-		//Wait for threads
-		if(thdOneSuccess)
-		{
-			pthread_join(thread0, NULL);
-		}
-		if(thdTwoSuccess)
-		{
-			pthread_join(thread1, NULL);
-		}
+		pthread_create(&thread1, NULL, runner, &secThread);
+		//Wait for threads		
+		pthread_join(thread0, NULL);	
+		pthread_join(thread1, NULL);
 		merge(*thdArg, thdArg->lowRec, thdArg->hiRec, t);
 	}
 	
