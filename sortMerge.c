@@ -126,7 +126,7 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	
 	while(i <= mid && j <= hi)
 	{
-		if(compare(thdArg.array[i].key, thdArg.array[j].key))
+		if(compare(thdArg.array[i].key, thdArg.array[j].key) < 0)
 		{
 			c[counter] = thdArg.array[i];
 			counter++;
