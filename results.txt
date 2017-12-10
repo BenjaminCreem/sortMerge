@@ -1,0 +1,6 @@
+Num Threads: 16
+File Name: data_128
+File Size: 8192
+The number of records is: 128
+The number of records per thread is: 8
+The number of cores is: 4
