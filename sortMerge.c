@@ -8,7 +8,18 @@
 
 /**
  * Author: Benjamin Creem
+ * Date: December 10th, 2017
  * This program sorts a file using merge sort and threads
+ * The file must have each line with keys length 8 and 
+ * Data that comes after the key on that same kine with length 56
+ *
+ * Input: argv[2] = number of threads (works with 1, 2, 4, 8)
+ * Input: argv[3] = filename
+ * Output: The file that the user entered, but sorted
+ * Example: ./sortMerge 4 data_128
+ * 
+ * PreProcessing/Dependencies: 
+ * Look at the #includes
  */
 
 #define KEYSIZE 8
@@ -69,31 +80,14 @@ int main(int argc, char *argv[])
 
 
 	Record *recs;
-	printf("Before MMAP\n");
 	recs = mmap(NULL, FileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(file), 0);
-	printf("After MMAP\n");
-	//printf("Before Sorting\n");
-	//for(int i = 0; i < nRecs; i++)
-	//{
-	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
-	//}
 	
 	minThreadSize = nRecsPerThd;
 
-	//We are now ready to divide the problem into multiple threads. 
-	//The first step is to copy the file's entries into Records, and then
-	//put those records into nThreads arrays. These arrays are then
-	//sorted in threads using qsort, before they are joined up with other
-	//threads and arrays and merged back together. This process repeats
-	//until the final sorted array is stored in the 0th array. 
+	//We are now ready to merge sort the memory mapped file
 	
 	mergesort(recs, nRecs);
 	
-	printf("After Sorting\n");
-	for(int i = 0; i < nRecs; i++)
-	{
-		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
-	}
 	munmap(recs, FileSize);
 	fclose(file);
 }
@@ -102,8 +96,6 @@ int main(int argc, char *argv[])
 /**
  * Merge two halves of the same array in a ThdArg
  */
-
-
 void* merge(ThdArg thdArg, int low, int hi, int tid)
 {
 	int counter = 0;
@@ -160,6 +152,9 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	free(c);
 }
 
+/**
+ * This function sorts array with length arrayLength
+ */
 void mergesort(Record *array, int arrayLength)
 {
 	ThdArg threadArgument;
@@ -170,38 +165,25 @@ void mergesort(Record *array, int arrayLength)
 	numThreads = 0;
 	pthread_mutex_init(&lockNumThreads, NULL);
 	threadArgument.tid = 0;
-
 	//Starting primary thread
 	pthread_t thread;
-	printf("Initial Thread Created\n");
 	pthread_create(&thread, NULL, runner, &threadArgument);
 	pthread_join(thread, NULL);
 }
 
+/*
+ * This is the thread that will be created when a thread needs to be split up
+ * It gets passed a thread argument that is then used to sort everything
+ */
 void *runner(void *param)
 {
 	ThdArg *thdArg = (ThdArg *) param;
 	int t = thdArg->tid;
 	
 	//If we can't create anymore threads to do work, qsort
-	//I guess minThreadSize should be called minArraySize,
-	//I will change that later
 	if(thdArg->hiRec - thdArg->lowRec <= minThreadSize)
 	{
-		//printf("%d   %d", minThreadSize ,thdArg->hiRec-thdArg->lowRec);
-		//printf("\n\n\n\n\nBefore QSorting\n");
-		//for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
-		//{
-		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		//}
-		//printf("qsorting");
 		qsort(&(thdArg->array[thdArg->lowRec]), (thdArg->hiRec - thdArg->lowRec) + 1, sizeof(Record), compare);
-
-		//printf("\n\n\n\n\nAfter QSorting\n");
-		//for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
-		//{
-		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		//}
 	}
 	else //Array needs to be split into two smaller arrays in two separate threads
 	{
@@ -232,24 +214,14 @@ void *runner(void *param)
 		//Wait for threads		
 		pthread_join(thread0, NULL);	
 		pthread_join(thread1, NULL);
-		printf("\nBefore Merging\n");
-		//for(int i = thdArg->lowRec; i <= mid; i++)
-		//{
-		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		//}
 		merge(*thdArg, thdArg->lowRec, thdArg->hiRec, t);
-		//printf("After Merging\n");
-		//for(int i = mid+1; i < thdArg->hiRec; i++)
-                //{
-                //       printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-                //}
 	}
 	
 }
 
-
-
-
+/**
+ * This function is used to compare keys 
+ */
 int compare(const void *a, const void *b)
 {
 	Record recA = *(Record *)a;
