@@ -42,7 +42,7 @@ pthread_mutex_t lockNumThreads;
 int main(int argc, char *argv[])
 {
 	int nThreads = atoi(argv[1]);
-	FILE *file = fopen(argv[2], "r");
+	FILE *file = fopen(argv[2], "rw");
 	if(file == NULL)
 	{
 		fprintf(stderr, "Can't open file\n");
@@ -68,22 +68,10 @@ int main(int argc, char *argv[])
 	printf("The number of cores is: %d\n", n);
 
 
-	Record recs[nRecs];
-	Record newRec;
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t read;
-	int recNum = 0;
-	for(int i = 0; i < nRecs; i++)
-	{
-		read = getline(&line, &len, file);
-		strncpy(newRec.key, line, KEYSIZE);
-		strncpy(newRec.data, line+KEYSIZE, KEYSIZE+DATASIZE);
-		//printf("%.*s\n", KEYSIZE, newRec.key);
-		recs[recNum] = newRec;
-		recNum++;
-	}
-
+	Record *recs;
+	printf("Before MMAP\n");
+	recs = mmap(NULL, FileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(file), 0);
+	printf("After MMAP\n");
 	//printf("Before Sorting\n");
 	//for(int i = 0; i < nRecs; i++)
 	//{
@@ -106,7 +94,7 @@ int main(int argc, char *argv[])
 	{
 		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
 	}
-
+	munmap(recs, FileSize);
 	fclose(file);
 }
 
