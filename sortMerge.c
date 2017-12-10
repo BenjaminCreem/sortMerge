@@ -42,7 +42,7 @@ pthread_mutex_t lockNumThreads;
 int main(int argc, char *argv[])
 {
 	int nThreads = atoi(argv[1]);
-	FILE *file = fopen(argv[2], "rw");
+	FILE *file = fopen(argv[2], "r+");
 	if(file == NULL)
 	{
 		fprintf(stderr, "Can't open file\n");
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
 	Record *recs;
 	printf("Before MMAP\n");
-	recs = mmap(NULL, FileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(file), 0);
+	recs = mmap(NULL, FileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(file), 0);
 	printf("After MMAP\n");
 	//printf("Before Sorting\n");
 	//for(int i = 0; i < nRecs; i++)
