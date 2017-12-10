@@ -84,11 +84,11 @@ int main(int argc, char *argv[])
 		recNum++;
 	}
 
-	//printf("Before Sorting\n");
-	//for(int i = 0; i < nRecs; i++)
-	//{
-	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
-	//}
+	printf("Before Sorting\n");
+	for(int i = 0; i < nRecs; i++)
+	{
+		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
+	}
 	
 	minThreadSize = nRecsPerThd;
 
@@ -101,11 +101,11 @@ int main(int argc, char *argv[])
 	
 	mergesort(recs, nRecs);
 	
-	//printf("After Sorting\n");
-	//for(int i = 0; i < nRecs; i++)
-	//{
-	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
-	//}
+	printf("After Sorting\n");
+	for(int i = 0; i < nRecs; i++)
+	{
+		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
+	}
 
 	fclose(file);
 }
@@ -127,21 +127,21 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	int i = low;
 	int mid = low + ((hi-low)/2);
 	int j = mid + 1;
-	Record *c = (Record *)malloc((hi-low+1) * sizeof(Record));
+	Record *c = (Record *)malloc(((hi-low)+1) * sizeof(Record));
 	
 	while(i <= mid && j <= hi)
 	{
 		if(strcmp(thdArg.array[i].key, thdArg.array[j].key))
 		{
+			c[counter] = thdArg.array[i];
 			counter++;
 			i++;
-			c[counter] = thdArg.array[i];
 		}
 		else
 		{
+			c[counter] = thdArg.array[j];
 			counter++;
 			j++;
-			c[counter] = thdArg.array[j];
 		}	
 	}
 
@@ -150,18 +150,18 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	{
 		while(j <= hi)
 		{
+			c[counter] = thdArg.array[j];
 			counter++;
 			j++;
-			c[counter] = thdArg.array[j];
 		}
 	}
 	else
 	{
 		while(i <= mid)
 		{
+			c[counter] = thdArg.array[i];
 			counter++;
 			i++;
-			c[counter] = thdArg.array[i];
 		}
 	}
 
@@ -170,9 +170,9 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	counter = 0;
 	while(i <= hi)
 	{
+		thdArg.array[i] = c[counter];
 		i++;
 		counter++;
-		thdArg.array[i] = c[counter];
  	}
 	free(c);
 }
@@ -211,7 +211,7 @@ void *runner(void *param)
 		//{
 		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
 		//}
-		printf("qsorting");
+		//printf("qsorting");
 		qsort(&(thdArg->array[thdArg->lowRec]), (thdArg->hiRec - thdArg->lowRec) + 1, sizeof(Record), compare);
 
 		//printf("\n\n\n\n\nAfter QSorting\n");
@@ -249,18 +249,17 @@ void *runner(void *param)
 		//Wait for threads		
 		pthread_join(thread0, NULL);	
 		pthread_join(thread1, NULL);
-		printf("\nBefore Merging\n");
-		for(int i = thdArg->lowRec; i <= mid; i++)
-		{
-			printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-		}
+		//printf("\nBefore Merging\n");
+		//for(int i = thdArg->lowRec; i <= mid; i++)
+		//{
+		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+		//}
 		merge(*thdArg, thdArg->lowRec, thdArg->hiRec, t);
-		printf("After Merging\n");
-		for(int i = mid+1; i < thdArg->hiRec; i++)
-                {
-                        printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
-
-                }
+		//printf("After Merging\n");
+		//for(int i = mid+1; i < thdArg->hiRec; i++)
+                //{
+                //        printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+                //}
 	}
 	
 }
