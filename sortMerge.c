@@ -84,11 +84,11 @@ int main(int argc, char *argv[])
 		recNum++;
 	}
 
-	printf("Before Sorting\n");
-	for(int i = 0; i < nRecs; i++)
-	{
-		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
-	}
+	//printf("Before Sorting\n");
+	//for(int i = 0; i < nRecs; i++)
+	//{
+	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE,recs[i].data);
+	//}
 	
 	minThreadSize = nRecsPerThd;
 
@@ -116,13 +116,8 @@ int main(int argc, char *argv[])
  */
 
 
-
-
-
-
 void* merge(ThdArg thdArg, int low, int hi, int tid)
 {
-	printf("Merging\n");
 	int counter = 0;
 	int i = low;
 	int mid = low + ((hi-low)/2);
@@ -131,7 +126,7 @@ void* merge(ThdArg thdArg, int low, int hi, int tid)
 	
 	while(i <= mid && j <= hi)
 	{
-		if(strcmp(thdArg.array[i].key, thdArg.array[j].key))
+		if(compare(thdArg.array[i].key, thdArg.array[j].key))
 		{
 			c[counter] = thdArg.array[i];
 			counter++;
@@ -182,7 +177,7 @@ void mergesort(Record *array, int arrayLength)
 	ThdArg threadArgument;
 	threadArgument.array = array;
 	threadArgument.lowRec = 0;
-	threadArgument.hiRec = arrayLength;
+	threadArgument.hiRec = arrayLength-1;
 	//Shared data
 	numThreads = 0;
 	pthread_mutex_init(&lockNumThreads, NULL);
@@ -249,7 +244,7 @@ void *runner(void *param)
 		//Wait for threads		
 		pthread_join(thread0, NULL);	
 		pthread_join(thread1, NULL);
-		//printf("\nBefore Merging\n");
+		printf("\nBefore Merging\n");
 		//for(int i = thdArg->lowRec; i <= mid; i++)
 		//{
 		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
@@ -258,7 +253,7 @@ void *runner(void *param)
 		//printf("After Merging\n");
 		//for(int i = mid+1; i < thdArg->hiRec; i++)
                 //{
-                //        printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+                //       printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
                 //}
 	}
 	
@@ -271,7 +266,7 @@ int compare(const void *a, const void *b)
 {
 	Record recA = *(Record *)a;
 	Record recB = *(Record *)b;
-	return strcmp(recA.key, recB.key);
+	return strncmp(recA.key, recB.key, KEYSIZE);
 }
 
 
