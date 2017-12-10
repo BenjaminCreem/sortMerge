@@ -3,6 +3,8 @@
 #include<pthread.h>
 #include<stdlib.h>
 #include<string.h>
+#include<sys/types.h>
+#include<sys/mman.h>
 
 /**
  * Author: Benjamin Creem
@@ -31,6 +33,7 @@ typedef struct ThdArg
 void *runner(void *param);
 int compare(const void *a, const void *b);
 void mergesort(Record *array, int arrayLength);
+
 
 int numThreads;
 int minThreadSize;
@@ -89,11 +92,6 @@ int main(int argc, char *argv[])
 	
 	minThreadSize = nRecsPerThd;
 
-	//Pointer to tid
-	pthread_t tid;
-	//set of thread attributes
-	pthread_attr_t attr; 
-
 	//We are now ready to divide the problem into multiple threads. 
 	//The first step is to copy the file's entries into Records, and then
 	//put those records into nThreads arrays. These arrays are then
@@ -104,10 +102,10 @@ int main(int argc, char *argv[])
 	mergesort(recs, nRecs);
 	
 	//printf("After Sorting\n");
-	for(int i = 0; i < nRecs; i++)
-	{
-		printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
-	}
+	//for(int i = 0; i < nRecs; i++)
+	//{
+	//	printf("%.*s%.*s \n", KEYSIZE, recs[i].key, DATASIZE, recs[i].data);
+	//}
 
 	fclose(file);
 }
@@ -213,8 +211,8 @@ void *runner(void *param)
 		//{
 		//	printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
 		//}
-
-		qsort(thdArg->array, thdArg->hiRec - (thdArg->lowRec), sizeof(Record), compare);
+		printf("qsorting");
+		qsort(&(thdArg->array[thdArg->lowRec]), (thdArg->hiRec - thdArg->lowRec) + 1, sizeof(Record), compare);
 
 		//printf("\n\n\n\n\nAfter QSorting\n");
 		//for(int i = thdArg->lowRec+1; i < thdArg->hiRec; i++)
@@ -251,9 +249,19 @@ void *runner(void *param)
 		//Wait for threads		
 		pthread_join(thread0, NULL);	
 		pthread_join(thread1, NULL);
+		printf("\nBefore Merging\n");
+		for(int i = thdArg->lowRec; i <= mid; i++)
+		{
+			printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+		}
 		merge(*thdArg, thdArg->lowRec, thdArg->hiRec, t);
+		printf("After Merging\n");
+		for(int i = mid+1; i < thdArg->hiRec; i++)
+                {
+                        printf("%.*s%.*s \n", KEYSIZE, thdArg->array[i].key, DATASIZE, thdArg->array[i].data);
+
+                }
 	}
-	
 	
 }
 
