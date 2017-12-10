@@ -12,6 +12,9 @@ There is no check to make sure that the number of threads is valid
 
 argv[3] = name of the file that the user wants to be sorted
 
+The files data_128 and data_512k are sorted. The original unsorted files
+are data_128_orig and data_512k_orig
+
 NOTE: My merge function is so bad that it actually is only slightly to 
 use more than 1 thread than it is to just sort with only 1 thread,
 but technically it does make multiple threads and it does sort the
